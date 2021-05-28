@@ -1,16 +1,42 @@
-# This is a sample Python script.
+import Model
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import torch
+import torch.nn as nn
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+
+model = Model.AutoEncoder()
+
+criterion = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+epochs = 10000
+loss_arr = np.zeros((epochs,1))
+N = 50
+for i in range(epochs):
+    A = np.random.rand()
+    w = np.random.rand() * math.pi/N
+    f = np.random.rand() * 2 * math.pi
+    b = (np.random.rand() - 0.5) * 1000
+    # y =  torch.Tensor(A * np.sin( w * np.array(range(N)) + f) + b)
+    y = A*np.array(range(N)) + b + f*np.array(range(N))*np.array(range(N))
+    y  -= np.mean(y)
+    y = torch.Tensor(y)
+    x = y + A*0.2*torch.Tensor(A*np.random.rand(N))
 
+    x = torch.reshape(x, (1, 1, N))
+    y = torch.reshape(y, (1, 1, N))
+    y_hat = model.forward(x)
+    loss = criterion(y_hat, y)
+    loss_arr[i] = float(loss)
+    if i % 10 == 0:
+        print(f'Epoch: {i} Loss: {loss}')
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+plt.figure(1)
+plt.plot(loss_arr)
+plt.show()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
