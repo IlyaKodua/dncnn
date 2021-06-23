@@ -1,26 +1,37 @@
 from torch import nn
 import torch.nn.functional as F
 import torch
+import torchvision
+import numpy as np
 
 class AutoEncoder(nn.Module):
 
-    def __init__(self):
+    def __init__(self, n_channels, n_filters, kernel_size):
+
         super(AutoEncoder, self).__init__()
-        self.conv1 = nn.Conv1d(1, 128, 3)
-        self.conv2 = nn.Conv1d(128,32,3)
-        self.convT1 = nn.ConvTranspose1d(32,128 ,3)
-        self.convT2 = nn.ConvTranspose1d(128,1 ,3)
-        self.conv3 = nn.Conv1d(1,1,1)
+
+
+        layers = [
+            nn.Conv2d(in_channels=n_channels, out_channels=n_filters, kernel_size=kernel_size,
+                      padding=1, bias=False),
+            nn.ReLU(inplace=True)
+        ]
+
+        depth = 20
+        for _ in range(depth-2):
+            layers.append(nn.Conv2d(in_channels=n_filters, out_channels=n_filters, kernel_size=kernel_size,
+                                    padding=1, bias=False))
+            layers.append(nn.BatchNorm2d(n_filters))
+            layers.append(nn.ReLU(inplace=True))
+        layers.append(nn.Conv2d(in_channels=n_filters, out_channels=n_channels, kernel_size=kernel_size,
+                                padding=1, bias=False))
+        self.dncnn = nn.Sequential(*layers)
+
+
 
     def forward(self,x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.convT1(x))
-        x = F.relu(self.convT2(x))
-        x = F.sigmoid(self.conv3(x))
-        return x
-
-
+        out = self.dncnn(x)
+        return out
 
 
 

@@ -1,41 +1,62 @@
-import Model
 
+import matplotlib.pyplot as plt
+import helper
+
+import Model
 import torch
 import torch.nn as nn
 import numpy as np
-import math
+from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
+import cv2
+import glob
+import  random
 
-model = Model.AutoEncoder()
 
-criterion = nn.BCELoss()
+dir_path = 'dataset/'
+
+transform = transforms.Compose ([transforms.Resize (255), 
+                                transforms.CenterCrop (224), 
+                                transforms.ToTensor ()])
+
+
+dataset = datasets.ImageFolder(root=dir_path, transform=transform)
+
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True)
+
+model = Model.AutoEncoder(3, 64, 3)
+criterion = nn.MSELoss(size_average=False)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
-
-epochs = 10000
+epochs = len(dataloader)
 loss_arr = np.zeros((epochs,1))
-N = 50
-for i in range(epochs):
-    A = np.random.rand()
-    w = np.random.rand() * math.pi/N
-    f = np.random.rand() * 2 * math.pi
-    b = (np.random.rand() - 0.5) * 1000
-    # y =  torch.Tensor(A * np.sin( w * np.array(range(N)) + f) + b)
-    y = torch.Tensor(np.array(range(N)))/(N-1)
-    x = y + torch.Tensor(np.random.rand(N))/(N-1)
-
-    x = torch.reshape(x, (1, 1, N))
-    y = torch.reshape(y, (1, 1, N))
-    y_hat = model.forward(x)
-    loss = criterion(y_hat, y)
-    loss_arr[i] = float(loss)
-    if i % 10 == 0:
-        print(f'Epoch: {i} Loss: {loss}')
+cnt = 0
+for images in dataloader:
+    im = images[0]
     optimizer.zero_grad()
+    noise = torch.zeros(im.size())
+    stdN = np.random.uniform(0, 55, size=noise.size()[0])
+    for n in range(noise.size()[0]):
+        sizeN = noise[0,:,:,:].size()
+        noise[n,:,:,:] = torch.FloatTensor(sizeN).normal_(mean=0, std=stdN[n]/255.)
+    im_in = im + noise
+    out = model(im_in)
+    loss = criterion(out, noise) / (im.size()[0]*2)
+#    for i in range(im_in.size()[0]):
+#        im_out = im_in[i] - out[i]
+#        cv2.imwrite('data_d/'+str(cnt) + "_" + str(i) + ".png" ,(im_out-im_out.min() ) / im_out.max())
+#        cv2.imwrite('data_n/'+str(cnt) + "_" + str(i) + ".png"  ,(im_in[i]-im_in[i].min()) / im_in[i].max())
+    loss_arr[cnt] = loss.cpu().detach().numpy().sum()
     loss.backward()
     optimizer.step()
-plt.figure(1)
-plt.plot(loss_arr)
-plt.show()
+    print(cnt)
+    print(loss_arr[cnt])
+    cnt += 1
+PATH = 'net.pth'
+torch.save(model.state_dict(), PATH)
 
+plt.figure(2)
+plt.plot(loss_arr, 'r')
+plt.show()
+cv2.waitKey(0)
 
