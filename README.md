@@ -1,1 +1,3 @@
-# AutorncoderSignal
+# DNCNN
+
+Simple dncnn training.
