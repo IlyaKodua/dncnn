@@ -4,11 +4,11 @@ import torch
 import torchvision
 import numpy as np
 
-class AutoEncoder(nn.Module):
+class DNCNN(nn.Module):
 
     def __init__(self, n_channels, n_filters, kernel_size):
 
-        super(AutoEncoder, self).__init__()
+        super(DNCNN, self).__init__()
 
 
         layers = [

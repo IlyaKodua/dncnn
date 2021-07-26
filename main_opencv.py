@@ -13,11 +13,11 @@ import  math
 
 
 
-dir_list = glob.glob('/home/liya/devel/DNCNN/AutorncoderSignal/dataset/train/*.png')
+dir_list = glob.glob('dataset/train/*.png')
 
 tran = transforms.ToTensor()
 
-net = Model.AutoEncoder(1, 64, 3)
+net = Model.DNCNN(1, 64, 3)
 net = net.float()
 criterion = nn.MSELoss(reduction='mean')
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)

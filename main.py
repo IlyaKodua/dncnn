@@ -17,7 +17,7 @@ dataset = datasets.ImageFolder(root=dir_path, transform=transform)
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True)
 
-model = Model.AutoEncoder(3, 64, 3)
+model = Model.DNCNN(3, 64, 3)
 criterion = nn.MSELoss(reduction='mean')
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
