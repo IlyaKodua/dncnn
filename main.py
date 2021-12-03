@@ -10,15 +10,19 @@ import matplotlib.pyplot as plt
 
 dir_path = 'dataset/'
 
-transform = transforms.Compose ([transforms.ToTensor ()])
+transform = transforms.Compose ([transforms.ToTensor (),
+                                 transforms.Grayscale(),
+                                 transforms.Normalize((127.5, 127.5, 127.5),
+                                                      (127.5, 127.5, 127.5)),
+                                 ])
 
 
 dataset = datasets.ImageFolder(root=dir_path, transform=transform)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
 
-model = Model.DNCNN(3, 64, 3)
-criterion = nn.MSELoss(reduction='mean')
+model = Model.DNCNN(1, 64, 3)
+criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 epochs = len(dataloader)
